@@ -90,3 +90,47 @@ auto r = f();          // 类型被藏起来，需跳看签名
 ```
 
 - 用不用：迭代器/嵌套模板类型 → 用；`int`、`bool` 等类型本身就是信息 → 写清楚
+
+## 1.4 结构体数组排序 sort + lambda
+
+- 比较器返回「`x` 应该排在 `y` 前面」是否为真：**升序写 `<`，降序写 `>`**
+- 复杂度 O(n log n)，比较器被调用约 n log n 次
+
+```cpp
+struct Node { int id, score; };
+vector<Node> a(n);
+
+sort(a.begin(), a.end(), [](const Node& x, const Node& y) {
+    return x.score < y.score;      // 按 score 升序；降序把 < 换成 >
+});
+```
+
+**多关键字**：先按 score 降序，score 相同再按 id 升序
+
+```cpp
+sort(a.begin(), a.end(), [](const Node& x, const Node& y) {
+    if (x.score != y.score) return x.score > y.score;   // 第一关键字
+    return x.id < y.id;                                 // 第二关键字，方向可不同
+});
+```
+
+```cpp
+// 所有关键字同方向时，tie 更短
+sort(a.begin(), a.end(), [](const Node& x, const Node& y) {
+    return tie(x.score, x.id) > tie(y.score, y.id);
+});
+```
+
+| 场景 | 写法 |
+| --- | --- |
+| C 数组 | `sort(a, a + n, cmp)` |
+| 重载 `operator<` | 结构体内写 `bool operator<(const Node& o) const`，只有全局唯一定义时才用 |
+| 相等元素保持原顺序 | `stable_sort` |
+| pair 天然字典序 | `vector<pair<int,int>>` 直接 `sort`，`rbegin/rend` 逆序 |
+
+**易错点**
+
+- **别写 `<=`**：必须严格弱序，`return x.score <= y.score;` 是 UB，`sort` 可能越界崩溃（不是排错，是随机崩）
+- 参数用 `const Node&`，按值传会拷贝 n log n 次
+- 不需要捕获外部变量就写 `[]`，别写 `[&]`
+- 比较器里别做重活（开根号、查哈希表等）
