@@ -13,3 +13,10 @@
 | 二进制中 1 的个数 | `__builtin_popcount(n)` |
 | lowbit（消最低位的 1） | `n -= n & -n` |
 | 判断 2 的幂 | `(n & -n) == n` |
+| 去重且有序 | `set`，insert 时自动排序去重 |
+| 数字 ↔ 字符串 | `to_string(n)` / `stringstream` |
+| 按空格切分字符串 | `istringstream` + `while (iss >> w)` |
+| 输出保留 k 位小数 | `cout << fixed << setprecision(k)` |
+| 删掉所有等于 x 的元素 | `v.erase(remove(v.begin(), v.end(), x), v.end())` |
+| 找不到的判断 | `s.find(c) != string::npos`（不是 -1） |
+| 万能头文件 | `#include <bits/stdc++.h>`（比赛可用，项目里别用） |

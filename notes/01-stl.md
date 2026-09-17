@@ -134,3 +134,111 @@ sort(a.begin(), a.end(), [](const Node& x, const Node& y) {
 - 参数用 `const Node&`，按值传会拷贝 n log n 次
 - 不需要捕获外部变量就写 `[]`，别写 `[&]`
 - 比较器里别做重活（开根号、查哈希表等）
+
+## 1.5 string 常用操作
+
+```cpp
+string s = "hello";
+s.size();  s.empty();  s.clear();
+s += "x";  s.push_back('c');
+s.back();  s.front();
+s.insert(pos, ".");            // 在 pos 处插入
+s.substr(pos, len);            // 起始位置 + 长度
+s.substr(pos);                 // 从 pos 一直到结尾
+s.find(c);                     // 返回下标，找不到返回 string::npos
+```
+
+- `substr` 的参数是**起始位置 + 长度**，不是起止位置：`s.substr(1, 3)` 是「从下标 1 起取 3 个」
+- `s.substr(pos)` 只有一个参数时是从 `pos` 到结尾；`pos` 等于 `size()` 时返回空串（不报错），超过才会抛 `out_of_range`
+- 截出的前导 0 转成数字就没了：`"04"` → `4`
+
+**易错点**
+
+- **`find` 找不到返回的是 `string::npos`，不是 -1**。`npos` 是 `size_t` 类型的极大值，判断要写 `if (s.find(c) != string::npos)`。和 `-1` 比较虽然常常也能跑通，但类型不匹配，别养成这个习惯
+- `find` 只返回**第一个**匹配的下标，有多个相同字符也只给第一个
+- `s[i]` 返回的是 `char`，不是 `string`，不能直接赋给 string（见下）
+
+**char 与 string 不能混**
+
+```cpp
+char   c1 = 'a';              // 单引号，一个字符
+string s1 = "hello";          // 双引号
+
+string s2(1, 'a');            // "a"：用 1 个字符 'a' 构造
+string s3 = string(1, s[i]);  // ✓ 想取 string 里某个字符单独成串，这么写
+
+string bad = 'a';             // ✗ char 赋给 string
+string bad2 = s[i];           // ✗ 同样不行
+```
+
+## 1.6 vector 常用操作
+
+```cpp
+vector<int> v(110, 0);         // 110 个 0，一行完成初始化
+v.push_back(x);  v.pop_back();
+v.size();  v.empty();  v.clear();
+v.back();  v.front();
+
+v.erase(v.begin() + 2);                 // 删下标 2
+v.erase(v.begin() + l, v.begin() + r);  // 删区间 [l, r)
+sort(v.begin(), v.end());               // 升序
+sort(v.rbegin(), v.rend());             // 降序（反向迭代器）
+reverse(v.begin(), v.end());            // 翻转
+```
+
+**删掉所有等于 x 的元素**
+
+```cpp
+v.erase(remove(v.begin(), v.end(), x), v.end());
+```
+
+- `remove` **不会改变容器大小**，它只是把要保留的元素挪到前面、返回新的逻辑结尾；必须再配 `erase` 才真正删掉
+- 把 vector 传给普通数组函数，要取底层指针：`f(v.data(), v.size())`，函数签名照常写 `int a[]` 或 `int* a`
+- `back()` / `front()` 返回**元素**；`begin()` / `end()` 返回**迭代器**，取值要解引用（`*v.begin()`）
+
+## 1.7 set：自动去重 + 有序
+
+```cpp
+set<long long> S;
+S.insert(x);  S.count(x);  S.erase(x);  S.size();
+
+for (auto it = S.begin(); it != S.end(); it++) cout << *it << ' ';
+for (auto x : S) cout << x << ' ';        // 范围 for 更省事
+```
+
+- `insert` 时**自动去重并排好序**，这是它和 vector 最大的区别
+- **不能随机访问**（没有 `S[i]`），遍历只能靠迭代器
+- 增删查 O(log n)（红黑树）。只要判存在、不在乎有序，用 `unordered_set` 平均 O(1)
+- 迭代器类型必须和元素类型一致：`set<long long>::iterator` 不能写成 `set<int>::iterator`（编译报错）；C++11 起直接用 `auto` 最省事
+
+## 1.8 数字 ↔ 字符串
+
+```cpp
+string s = to_string(123);          // 数字 → 字符串（C++11，最省事）
+
+stringstream ss;                    // 万能转换：数字 → 字符串
+ss << 123;  string t = ss.str();
+
+stringstream s2("456");  int a;  s2 >> a;    // 字符串 → 数字
+
+istringstream iss(line);            // 按空格切分一整行
+string w;
+while (iss >> w) { /* 逐个单词 */ }
+```
+
+- `stringstream` 每次都要构造对象、有缓冲区开销，**大量转换时比手写快**：`num % 10 + '0'` 拼起来再 `reverse`
+- 想按空格/换行把一个字符串拆成若干片段，`istringstream` 比手写 split 干净得多
+
+## 1.9 输出格式控制（iomanip）
+
+```cpp
+cout << fixed << setprecision(2) << 3.14159;   // 3.14   小数位数
+cout << setprecision(4) << 3.14159;            // 3.142  有效数字位数
+cout << setw(5) << 42;                         // "   42"  字段宽度
+cout << left << setw(5) << 42;                 // "42   "
+```
+
+- **`setprecision` 单独用是「有效数字位数」，加 `fixed` 才是「小数点后位数」** —— 刷题输出小数基本都要带上 `fixed`
+- `setw` 只作用于紧跟着的那一个输出，不会持续生效
+
+**ASCII 小知识**：`'a' - 'A' == 32`，小写字母比对应大写字母大 32。
