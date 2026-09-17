@@ -1,0 +1,10 @@
+{
+  "title": "算法刷题知识点",
+  "subtitle": "要点式速查笔记 · 只记核心用法、易错点和复杂度",
+  "files": [
+    "01-stl.md",
+    "02-bit.md",
+    "03-problems.md",
+    "04-cheatsheet.md"
+  ]
+}
