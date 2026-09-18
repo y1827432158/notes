@@ -4,7 +4,8 @@
   "files": [
     "01-stl.md",
     "02-bit.md",
-    "03-problems.md",
-    "04-cheatsheet.md"
+    "03-basic.md",
+    "04-problems.md",
+    "05-cheatsheet.md"
   ]
 }
