@@ -12,6 +12,8 @@
 | 求第 k 小 / 前 k 小 | 快速选择（平均 O(n)），或直接 `nth_element` |
 | 逆序对数量 | 归并合并时 `res += mid - i + 1`，答案开 `long long` |
 | 有序数组查边界 | 二分：左边界 `mid = (l+r)/2`，右边界 `mid = (l+r+1)/2`（写了 `l = mid` 就加 1） |
+| 浮点二分 | 迭代 100 次，`mid = (l+r)/2`，不用 +1；区间要覆盖负数 |
+| 开方 / 取整 | `sqrt` / `cbrt` / `pow` / `fabs` / `ceil` / `floor`（`<cmath>`） |
 | 大数组开在全局 | `const int N = 1e5 + 10; int q[N];` |
 | 范围小且是 int | `bool st[N]` 数组，比哈希更快 |
 | 取二进制第 i 位 | `n >> i & 1` |
