@@ -16,6 +16,8 @@
 | 开方 / 取整 | `sqrt` / `cbrt` / `pow` / `fabs` / `ceil` / `floor`（`<cmath>`） |
 | 超长整数（超 19 位） | `string` 读入 → 倒着转 `vector<int>`（记得 `- '0'`）→ 算完倒着输出 |
 | 大数加法 | `t += A[i] + B[i]`，`push_back(t % 10)`，`t /= 10`，循环后 `if (t)` 补最高位 |
+| 大数减法 | 先 `cmp` 比大小定正负；写 `(t+10)%10`，`t = (t<0)` 当借位 |
+| 减法去前导 0 | `while (C.size() > 1 && C.back() == 0) C.pop_back();` |
 | 大数组开在全局 | `const int N = 1e5 + 10; int q[N];` |
 | 范围小且是 int | `bool st[N]` 数组，比哈希更快 |
 | 取二进制第 i 位 | `n >> i & 1` |
