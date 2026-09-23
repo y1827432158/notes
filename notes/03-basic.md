@@ -451,58 +451,64 @@ printf("%.6lf\n", cbrt(n));        // 790 直接这么写也能过
 -----
 1 0 0
 
-A = [9, 9]（倒着存）   B = [1]
-i=0: t = 9 + 1 = 10 → C[0] = 0, t = 1     ← 这一列 10，写 0 进 1
-i=1: t = 1 + 9 = 10 → C[1] = 0, t = 1     ← i 超出 B 的长度，只加 A
-循环结束，t = 1 还有剩 → C = [0, 0, 1]
+q1 = [9, 9]（倒着存）   q2 = [1]
+i=0: decimal = 9 + 1 = 10 → res[0] = 0, decimal = 1   ← 这一列满 10，写 0 进 1
+i=1: decimal = 1 + 9 = 10 → res[1] = 0, decimal = 1   ← i 超出 q2 的长度，被 if 挡住
+循环结束，decimal = 1 还有剩 → res = [0, 0, 1]
 倒着输出 → 100
 ```
 
 **模板**
 
 ```cpp
-vector<int> add(vector<int> &A, vector<int> &B) {   // A、B 倒着存，个位在下标 0
-    if (A.size() < B.size()) return add(B, A);      // 保证 A 不短，省得每步判两个越界
-    vector<int> C;
-    int t = 0;                                      // t = 当前这一列的和
-    for (int i = 0; i < A.size(); i++) {
-        t += A[i];
-        if (i < B.size()) t += B[i];
-        C.push_back(t % 10);                        // 留下的这一位
-        t /= 10;                                    // 剩下的就是进位
+// q1、q2 都是倒着存的（个位在下标 0），返回的 res 也是倒着存的
+vector<int> add(vector<int> &q1, vector<int> &q2) {
+    vector<int> res;
+    int decimal = 0;                            // decimal = 这一列的和（进循环时是上一位的进位）
+
+    // 谁长谁说了算：两个数还有任意一个没读完，就继续往下加
+    for (int i = 0; i <= q1.size() - 1 || i <= q2.size() - 1; i++) {
+        if (i < q1.size()) decimal += q1[i];    // 短的读完了就不加，防止越界
+        if (i < q2.size()) decimal += q2[i];
+
+        res.push_back(decimal % 10);            // 这一列要写下的数字（取个位）
+        decimal /= 10;                          // 剩下的是进位，留给下一列
     }
-    if (t) C.push_back(t);                          // ← 最高位还有进位，不能丢
-    return C;
+
+    if (decimal) res.push_back(decimal);        // 最高位还有进位，比如 99 + 1 = 100
+    return res;
 }
 
 int main() {
-    string a, b;
-    cin >> a >> b;
-    vector<int> A, B;
-    for (int i = a.size() - 1; i >= 0; i--) A.push_back(a[i] - '0');   // 倒着存
-    for (int i = b.size() - 1; i >= 0; i--) B.push_back(b[i] - '0');
+    string s1, s2;
+    cin >> s1 >> s2;
 
-    vector<int> C = add(A, B);
-    for (int i = C.size() - 1; i >= 0; i--) cout << C[i];   // 倒着输出
+    vector<int> q1, q2;
+    for (int i = s1.size() - 1; i >= 0; i--) q1.push_back(s1[i] - '0');   // 倒着存，- '0' 把字符变成数字
+    for (int j = s2.size() - 1; j >= 0; j--) q2.push_back(s2[j] - '0');
+
+    auto q3 = add(q1, q2);
+
+    for (int k = q3.size() - 1; k >= 0; k--) cout << q3[k];   // 倒着输出，数字之间不加任何分隔
     return 0;
 }
 ```
 
-**`t` 一个变量为什么够用**
+**`decimal` 一个变量为什么够用**
 
-它同时扮演两个角色：进循环时是**上一列的进位**（0 或 1），加完 `A[i]`、`B[i]` 之后变成**这一列的和**（最大 `9 + 9 + 1 = 19`）。
+它同时扮演两个角色：进循环时是**上一列的进位**（0 或 1），加完 `q1[i]`、`q2[i]` 之后变成**这一列的和**（最大 `9 + 9 + 1 = 19`）。
 
-- `t % 10` = 这一列要写下的数字
-- `t / 10` = 留给下一列的进位（和 < 10 时自动变 0）
+- `decimal % 10` = 这一列要写下的数字
+- `decimal / 10` = 留给下一列的进位（和 < 10 时自动变 0）
 
 不用单独开 `carry` 变量 —— `%` 和 `/` 各取所需。减法的借位也是同一个套路。
 
 **易错点**
 
-- **存反了 / 输出反了**：存的时候 `for` 从 `size() - 1` 倒着来，输出也得从 `C.size() - 1` 倒着来，两头都要记得倒
-- **字符转数字忘 `- '0'`**：`a[i]` 是 `char`，`'5'` 的值是 **53** 不是 5。不减 `'0'` 的话数组里装的是 ASCII 码，后面对不上
-- **最高位进位不能丢**：`if (t) C.push_back(t);` 少了这行，`99 + 1` 输出 `00`。这是最容易漏的一步
-- **`push_back(t % 10)` 不是 `push_back(t)`**：`t` 可能是 19，只能写一位
+- **存反了 / 输出反了**：存的时候 `for` 从 `size() - 1` 倒着来，输出也得从 `res.size() - 1` 倒着来，两头都要记得倒
+- **字符转数字忘 `- '0'`**：`s1[i]` 是 `char`，`'5'` 的值是 **53** 不是 5。不减 `'0'` 的话数组里装的是 ASCII 码，后面对不上
+- **最高位进位不能丢**：`if (decimal) res.push_back(decimal);` 少了这行，`99 + 1` 输出 `00`。这是最容易漏的一步
+- **`push_back(decimal % 10)` 不是 `push_back(decimal)`**：`decimal` 可能是 19，只能写一位
 - **只能算非负整数**：本题限制「正整数（不含前导 0）」。带负号要另外判符号、比较大小时用不到
 - **前导 0**：加法结果不会产生前导 0（本题两数都无前导 0 且非 0），但换成减法 / 乘法就得单独去掉
 - 用 C 数组替代 `vector` 时，长度按 `const int N = 1e5 + 10` 开（见 3.3），**加法的结果最多比长的那个数多 1 位**
